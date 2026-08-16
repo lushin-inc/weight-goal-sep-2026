@@ -135,11 +135,18 @@ h2.sect:first-of-type{margin-top:0}
   background:rgba(255,255,255,.13); margin:0 0 8px;
 }
 .track .fill{position:absolute; inset:0 auto 0 0; border-radius:99px; background:linear-gradient(90deg,var(--blue),var(--mint)); transition:width .5s ease}
-.track .pace{position:absolute; top:-9px; bottom:-9px; width:2px; background:rgba(255,255,255,.55)}
+.track .pace{position:absolute; top:-9px; bottom:-9px; width:2px; background:rgba(255,255,255,.6); z-index:1}
+.track .tk{position:absolute; top:-5px; bottom:-5px; width:1px; background:rgba(255,255,255,.22)}
+.track .tk u{
+  position:absolute; top:calc(100% + 7px); left:50%; transform:translateX(-50%);
+  text-decoration:none; font-family:var(--f-mono); font-size:9.5px;
+  color:rgba(255,255,255,.45); white-space:nowrap;
+}
+.track.has-labels{margin-bottom:30px}
 .track .you{
   position:absolute; top:50%; width:22px; height:22px; margin:-11px 0 0 -11px;
   border-radius:99px; background:var(--signal); border:3px solid var(--band);
-  box-shadow:0 0 0 2px rgba(242,230,60,.35);
+  box-shadow:0 0 0 2px rgba(242,230,60,.35); z-index:2;
 }
 .track-legend{display:flex; gap:20px; flex-wrap:wrap; padding-top:12px; border-top:1px solid rgba(255,255,255,.12); margin-top:14px}
 .track-legend div{font-family:var(--f-disp); font-weight:600; font-size:10px; letter-spacing:.14em; text-transform:uppercase; opacity:.6}
@@ -289,6 +296,7 @@ svg.chart{display:block; width:100%; height:auto}
   <main>
     <section class="page" id="p-dashboard"></section>
     <section class="page" id="p-week"></section>
+    <section class="page" id="p-august"></section>
     <section class="page" id="p-total"></section>
     <section class="page" id="p-log"></section>
     <section class="page" id="p-body"></section>
@@ -402,6 +410,8 @@ const PAGES = [
     icon:'<path d="M4 19V5M4 19h16"/><path d="M8 15l4-5 4 3 4-6"/>' },
   { id:"week", name:"This week", group:null,
     icon:'<rect x="3.5" y="5" width="17" height="15" rx="2"/><path d="M3.5 10h17M8 3.5v3M16 3.5v3"/>' },
+  { id:"august", name:"August", group:null,
+    icon:'<rect x="3.5" y="4.5" width="17" height="16" rx="2"/><path d="M3.5 9h17"/><circle cx="8" cy="13" r="1"/><circle cx="12" cy="13" r="1"/><circle cx="16" cy="13" r="1"/><circle cx="8" cy="17" r="1"/><circle cx="12" cy="17" r="1"/>' },
   { id:"total", name:"Whole program", group:null,
     icon:'<circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/>' },
   { id:"log", name:"Daily log", group:"The numbers",
@@ -465,7 +475,42 @@ const row = (k, v, o={}) => `<div class="row${o.hi?" hi":""}">
 const rows = html => `<div class="rows">${html}</div>`;
 const COPY = '<svg viewBox="0 0 24 24"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M15 5H6a2 2 0 00-2 2v9"/></svg>';
 
-/* ===================== chart (shared by This week and Trend) ===================== */
+/* ===================== progress track (shared) =====================
+   Ends are labelled with the goal line at each end. One faint grey tick per
+   day, placed at the weight the goal line says you should be on that day.  */
+function trackCard(c){
+  const span = c.startWeight - c.endWeight;
+  const pos  = w => span <= 0 ? 0 : Math.max(0, Math.min(100, ((c.startWeight - w) / span) * 100));
+  const should = goalOn(c.now.date) ?? c.endWeight;
+  const gap = c.now.weight - should;
+  const youPct = pos(c.now.weight);
+  const ticks = (c.dates || []).map(s => {
+    const g = goalOn(s); if (g === null) return "";
+    const lab = c.tickLabel ? c.tickLabel(s) : null;
+    return `<i class="tk" style="left:${pos(g).toFixed(2)}%">${lab ? `<u>${lab}</u>` : ""}</i>`;
+  }).join("");
+  const labelled = !!(c.dates && c.tickLabel);
+  return `<div class="track-card">
+    <div class="track-ends">
+      <span>${c.startLabel || "Start"} ${short(c.startDate)}<b>${f1(c.startWeight)}</b></span>
+      <span class="r">${c.endLabel || "Finish"} ${short(c.endDate)}<b>${f1(c.endWeight)}</b></span>
+    </div>
+    <div class="track${labelled ? " has-labels" : ""}">
+      <div class="fill" style="width:${youPct.toFixed(2)}%"></div>
+      ${ticks}
+      <div class="pace" style="left:${pos(should).toFixed(2)}%"></div>
+      <div class="you" style="left:${youPct.toFixed(2)}%"></div>
+    </div>
+    <div class="track-legend">
+      <div><span class="dot" style="background:var(--signal)"></span>You today<b>${f1(c.now.weight)} lb</b></div>
+      <div><span class="dot" style="background:rgba(255,255,255,.6)"></span>Goal line today<b>${f1(should)} lb</b></div>
+      <div>${gap <= 0 ? "Under the line by" : "Over the line by"}<b>${Math.abs(gap).toFixed(1)} lb</b></div>
+      <div>Days left<b>${between(c.now.date, c.endDate)}</b></div>
+    </div>
+  </div>`;
+}
+
+/* ===================== chart (shared by This week, August and Trend) ===================== */
 function chartSVG(dates, opt){
   opt = opt || {};
   const W = 860, H = opt.h || 340, P = { t:18, r:16, b:34, l:46 };
@@ -476,7 +521,8 @@ function chartSVG(dates, opt){
   if (!pts.length) return "";
 
   let vals = pts.map(p=>p.y).concat(goals.map(p=>p.y));
-  if (opt.finish) vals.push(CONFIG.goalWeight);
+  const fin = (opt.finishAt === undefined) ? null : opt.finishAt;
+  if (fin !== null) vals.push(fin);
   const min = Math.min(...vals), max = Math.max(...vals), span = max - min;
   const step = span <= 3 ? 0.5 : span <= 8 ? 1 : 2;
   let lo = Math.floor(min/step)*step, hi = Math.ceil(max/step)*step;
@@ -495,8 +541,8 @@ function chartSVG(dates, opt){
   return `<svg class="chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="${opt.alt||"Weight against the goal line"}">
     ${ticks.map(v => `<line class="grid" x1="${P.l}" x2="${W-P.r}" y1="${Y(v)}" y2="${Y(v)}"/>
       <text class="axis" x="${P.l-9}" y="${Y(v)+4}" text-anchor="end">${tick(v)}</text>`).join("")}
-    ${opt.finish ? `<rect class="band" x="${P.l}" y="${Y(hi)}" width="${W-P.l-P.r}" height="${Y(CONFIG.goalWeight)-Y(hi)}"/>
-      <line x1="${P.l}" x2="${W-P.r}" y1="${Y(CONFIG.goalWeight)}" y2="${Y(CONFIG.goalWeight)}" stroke="var(--mint)" stroke-width="2"/>` : ""}
+    ${fin === null ? "" : `${opt.band ? `<rect class="band" x="${P.l}" y="${Y(hi)}" width="${W-P.l-P.r}" height="${Y(fin)-Y(hi)}"/>` : ""}
+      <line x1="${P.l}" x2="${W-P.r}" y1="${Y(fin)}" y2="${Y(fin)}" stroke="var(--mint)" stroke-width="2"/>`}
     ${xl.map(o => `<text class="axis" x="${X(o.i)}" y="${H-12}" text-anchor="middle">${o.text}</text>`).join("")}
     <path class="pace" d="${path(goals)}"/>
     <path class="real" d="${path(pts)}"/>
@@ -507,28 +553,15 @@ function chartSVG(dates, opt){
 /* ===================== DASHBOARD ===================== */
 (function(){
   const pct = Math.max(0, Math.min(100, (lost / totalGoal) * 100));
-  const pacePct = Math.max(0, Math.min(100, ((START_W - goalOn(latest.date)) / totalGoal) * 100));
   const ahead = vsPace <= 0;
   document.getElementById("p-dashboard").innerHTML = `
   <h1 class="title">Dashboard</h1>
 
-  <div class="track-card">
-    <div class="track-ends">
-      <span>Start ${short(CONFIG.programStart)}<b>${f1(START_W)}</b></span>
-      <span class="r">Finish ${short(CONFIG.targetDate)}<b>${f1(CONFIG.goalWeight)}</b></span>
-    </div>
-    <div class="track">
-      <div class="fill" style="width:${pct}%"></div>
-      <div class="pace" style="left:${pacePct}%"></div>
-      <div class="you" style="left:${pct}%"></div>
-    </div>
-    <div class="track-legend">
-      <div><span class="dot" style="background:var(--signal)"></span>You today<b>${f1(latest.weight)} lb</b></div>
-      <div><span class="dot" style="background:rgba(255,255,255,.55)"></span>Goal line today<b>${f1(goalOn(latest.date))} lb</b></div>
-      <div>${ahead ? "Under the line by" : "Over the line by"}<b>${Math.abs(vsPace).toFixed(1)} lb</b></div>
-      <div>Days left<b>${daysLeft}</b></div>
-    </div>
-  </div>
+  ${trackCard({
+    startDate: CONFIG.programStart, startWeight: START_W,
+    endDate: CONFIG.targetDate,     endWeight: CONFIG.goalWeight,
+    now: latest
+  })}
 
   <h2 class="sect">Against the goal</h2>
   ${rows(
@@ -565,18 +598,28 @@ function chartSVG(dates, opt){
   const nextGoal = goalOn(nextMon);
   const gapToGoal = latest.weight - nextGoal;
   const left = between(latest.date, nextMon);
-  const days = ALL.slice(ALL.indexOf(mon), ALL.indexOf(mon)+7);
+  const days = ALL.slice(ALL.indexOf(mon), ALL.indexOf(mon)+8);   // Mon through next Mon
 
   document.getElementById("p-week").innerHTML = `
-  <h1 class="title">This week &middot; ${short(mon)} to ${short(days[6])}</h1>
+  <h1 class="title">This week &middot; ${short(mon)} to ${short(nextMon)}</h1>
   <div class="chartcard">
-    ${chartSVG(days, { h:300, dot:3.4, alt:"This week against the goal line",
+    ${chartSVG(days, { h:300, dot:3.4, finishAt: nextGoal, alt:"This week against the goal line",
       xLabels: ds => ds.map((s,i) => ({ i, text: DOW[d(s).getDay()] })) })}
     <div class="legend">
       <span><span class="dot" style="background:var(--blue)"></span>Actual weight</span>
       <span><span class="dot" style="background:var(--muted)"></span>Goal line</span>
+      <span><span class="dot" style="background:var(--mint)"></span>Finish at ${f1(nextGoal)} lb</span>
     </div>
   </div>
+
+  <h2 class="sect">The eight day run</h2>
+  ${trackCard({
+    startLabel:"Mon", startDate: mon,     startWeight: goalOn(mon),
+    endLabel:"Mon",   endDate: nextMon,   endWeight: nextGoal,
+    dates: days, now: latest,
+    tickLabel: s => DOW[d(s).getDay()]
+  })}
+
   <h2 class="sect">Where the week stands</h2>
   ${rows(
     row("Monday start", f1(monW), {unit:"lb", sub:label(mon), hi:true}) +
@@ -602,6 +645,58 @@ function chartSVG(dates, opt){
         <td class="num ${chg1===null?"":cls(chg1)}">${chg1===null?"":sgn(chg1)}</td>
         <td class="num ${r&&g!==null?cls(r.weight-g):""}">${r&&g!==null?sgn(r.weight-g):""}</td></tr>`;
     }).join("")}</tbody></table></div></div>`;
+})();
+
+/* ===================== AUGUST =====================
+   Program start through the first day of September. Change MONTH_END to
+   "2026-10-01" and the title to September when the month turns over.        */
+(function(){
+  const from = CONFIG.programStart, to = "2026-09-01";
+  const days = ALL.slice(ALL.indexOf(from), ALL.indexOf(to) + 1);
+  const seen = days.filter(s => BY[s]);
+  if (!seen.length) return;
+
+  const startW = BY[from].weight;
+  const endGoal = goalOn(to);
+  const last = BY[seen[seen.length-1]];
+  const chg = last.weight - startW;
+  const left = between(last.date, to);
+  const gap = last.weight - endGoal;
+  const lowest = seen.reduce((a,s) => BY[s].weight < BY[a].weight ? s : a, seen[0]);
+
+  document.getElementById("p-august").innerHTML = `
+  <h1 class="title">August &middot; ${short(from)} to ${short(to)}</h1>
+  <div class="chartcard">
+    ${chartSVG(days, { h:320, finishAt: endGoal, alt:"August against the goal line",
+      xLabels: ds => ds.map((s,i) => ({s,i}))
+                       .filter(o => d(o.s).getDay() === 1 || o.i === ds.length-1)
+                       .map(o => ({ i:o.i, text: short(o.s) })) })}
+    <div class="legend">
+      <span><span class="dot" style="background:var(--blue)"></span>Actual weight</span>
+      <span><span class="dot" style="background:var(--muted)"></span>Goal line</span>
+      <span><span class="dot" style="background:var(--mint)"></span>Finish at ${f1(endGoal)} lb</span>
+    </div>
+  </div>
+
+  <h2 class="sect">The ${days.length} day run</h2>
+  ${trackCard({
+    startDate: from, startWeight: goalOn(from),
+    endDate: to,     endWeight: endGoal,
+    dates: days, now: last,
+    tickLabel: s => d(s).getDay() === 1 ? short(s) : null
+  })}
+
+  <h2 class="sect">Where August stands</h2>
+  ${rows(
+    row("Started", f1(startW), {unit:"lb", sub:label(from), hi:true}) +
+    row("Latest", f1(last.weight), {unit:"lb", sub:label(last.date)}) +
+    row("Change this month", sgn(chg), {unit:"lb", tone: chg<0?"good":chg>0?"bad":""}) +
+    row("Lowest this month", f1(BY[lowest].weight), {unit:"lb", sub:label(lowest)}) +
+    row("Goal on ${short(to)}", f1(endGoal), {unit:"lb", sub:label(to)}) +
+    row("Left to hit it", f1(gap), {unit:"lb", tone: gap<=0?"good":""}) +
+    row("Days left", left) +
+    row("Lb per day to get there", left>0 && gap>0 ? (gap/left).toFixed(2) : "0.00")
+  )}`;
 })();
 
 /* ===================== WHOLE PROGRAM ===================== */
@@ -787,7 +882,7 @@ function logTable(filter){
   document.getElementById("p-trend").innerHTML = `
   <h1 class="title">Trend</h1>
   <div class="chartcard">
-    ${chartSVG(ALL, { h:340, finish:true,
+    ${chartSVG(ALL, { h:340, finishAt:CONFIG.goalWeight, band:true,
       xLabels: ds => ds.map((s,i) => ({s,i})).filter(o => o.s.endsWith("-01") || o.i === 0)
                        .map(o => ({ i:o.i, text: MON[Number(o.s.slice(5,7))-1] })) })}
     <div class="legend">
