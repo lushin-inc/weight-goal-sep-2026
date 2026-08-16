@@ -6,7 +6,7 @@
 <title>Finish Line</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Patrick+Hand&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
 /* ============================================================
    THEME TOKENS
@@ -16,9 +16,9 @@
   --loss:#2E9E5B; --gain:#D9483F;
   --r:10px;
   --nav-w:238px; --nav-rail:64px;
-  --f-disp:"Oswald","Arial Narrow",system-ui,sans-serif;
-  --f-hand:"Patrick Hand","Bradley Hand",cursive;
-  --f-body:"Inter",system-ui,-apple-system,sans-serif;
+  --f-disp:"Archivo",system-ui,-apple-system,sans-serif;
+  --f-body:"Archivo",system-ui,-apple-system,sans-serif;
+  --f-mono:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
 }
 html[data-theme="light"]{
   --bg:#F4F4F2; --surface:#FFFFFF; --surface-2:#FAFAF8;
@@ -26,7 +26,7 @@ html[data-theme="light"]{
   --line:#E4E4DF; --line-2:#EFEFEA;
   --band:#2F312B; --band-ink:#FFFFFF;
   --mon:#FEFBD6; --mon-line:#E8D93B;
-  --wknd:#F0F0EC;
+  --wknd:#F0F0EC; --now:#E8F0FB;
   --shadow:0 1px 2px rgba(35,36,31,.06), 0 8px 24px rgba(35,36,31,.05);
 }
 html[data-theme="dark"]{
@@ -35,7 +35,7 @@ html[data-theme="dark"]{
   --line:#33352F; --line-2:#2A2C26;
   --band:#0F100D; --band-ink:#F1F1EC;
   --mon:#33301A; --mon-line:#8C8324;
-  --wknd:#1C1D19;
+  --wknd:#1C1D19; --now:#1D2833;
   --shadow:0 1px 2px rgba(0,0,0,.4), 0 8px 24px rgba(0,0,0,.28);
 }
 *{box-sizing:border-box}
@@ -43,9 +43,10 @@ html,body{margin:0;padding:0}
 body{
   background:var(--bg); color:var(--ink);
   font-family:var(--f-body); font-size:15px; line-height:1.5;
+  letter-spacing:-0.005em;
   -webkit-font-smoothing:antialiased;
 }
-.num{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1}
+.num{font-family:var(--f-mono); font-variant-numeric:tabular-nums; font-size:13.5px; letter-spacing:-0.02em}
 
 /* ============================================================
    SHELL
@@ -65,13 +66,12 @@ body{
 .iconbtn:hover{background:var(--surface-2); color:var(--ink)}
 .iconbtn:focus-visible{outline:2px solid var(--blue); outline-offset:2px}
 .iconbtn svg{width:19px;height:19px;stroke:currentColor;fill:none;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
-.brand{font-family:var(--f-disp); font-weight:600; font-size:15px; letter-spacing:.14em; text-transform:uppercase; color:var(--ink)}
-.here{font-family:var(--f-disp); font-weight:400; font-size:14px; letter-spacing:.1em; text-transform:uppercase; color:var(--muted)}
+.brand{font-family:var(--f-disp); font-weight:700; font-size:14px; letter-spacing:.15em; text-transform:uppercase; color:var(--ink)}
+.here{font-family:var(--f-disp); font-weight:500; font-size:13px; letter-spacing:.09em; text-transform:uppercase; color:var(--muted)}
 .here:before{content:"/"; margin-right:10px; color:var(--line)}
 .topbar .spacer{flex:1}
 .today-chip{
-  font-family:var(--f-disp); font-size:13px; letter-spacing:.06em;
-  color:var(--muted); white-space:nowrap;
+  font-family:var(--f-body); font-size:13px; color:var(--muted); white-space:nowrap;
 }
 .today-chip b{color:var(--ink); font-weight:600; margin-left:6px}
 
@@ -87,7 +87,7 @@ body.nav-collapsed nav.side{flex-basis:var(--nav-rail); width:var(--nav-rail)}
 body.nav-collapsed nav.side .nav-label,
 body.nav-collapsed nav.side .nav-group{opacity:0; pointer-events:none}
 .nav-group{
-  font-family:var(--f-disp); font-size:10px; letter-spacing:.18em;
+  font-family:var(--f-disp); font-weight:600; font-size:10px; letter-spacing:.16em;
   text-transform:uppercase; color:var(--muted);
   padding:16px 12px 7px; transition:opacity .12s;
 }
@@ -109,12 +109,12 @@ main{flex:1; min-width:0; padding:26px 22px 90px; max-width:1120px; margin:0 aut
 @keyframes in{from{opacity:0; transform:translateY(5px)}to{opacity:1;transform:none}}
 
 h1.title{
-  font-family:var(--f-disp); font-weight:500; font-size:21px;
-  letter-spacing:.03em; margin:0 0 22px; color:var(--ink-2);
+  font-family:var(--f-disp); font-weight:600; font-size:22px;
+  letter-spacing:-0.015em; margin:0 0 22px; color:var(--ink-2);
 }
 h2.sect{
-  font-family:var(--f-disp); font-weight:600; font-size:12px;
-  letter-spacing:.17em; text-transform:uppercase; color:var(--muted);
+  font-family:var(--f-disp); font-weight:600; font-size:11px;
+  letter-spacing:.15em; text-transform:uppercase; color:var(--muted);
   margin:34px 0 12px;
 }
 h2.sect:first-of-type{margin-top:0}
@@ -127,8 +127,8 @@ h2.sect:first-of-type{margin-top:0}
   border-radius:var(--r); padding:26px 24px 20px; box-shadow:var(--shadow);
 }
 .track-ends{display:flex; justify-content:space-between; align-items:flex-end; margin-bottom:16px}
-.track-ends span{font-family:var(--f-disp); font-size:11px; letter-spacing:.16em; text-transform:uppercase; opacity:.62}
-.track-ends b{display:block; font-family:var(--f-disp); font-weight:600; font-size:26px; letter-spacing:.01em; opacity:1}
+.track-ends span{font-family:var(--f-disp); font-weight:600; font-size:10px; letter-spacing:.15em; text-transform:uppercase; opacity:.6}
+.track-ends b{display:block; font-family:var(--f-disp); font-weight:700; font-size:28px; font-stretch:112%; letter-spacing:-0.02em; font-variant-numeric:tabular-nums; opacity:1; margin-top:4px}
 .track-ends .r{text-align:right}
 .track{
   position:relative; height:16px; border-radius:99px;
@@ -142,8 +142,8 @@ h2.sect:first-of-type{margin-top:0}
   box-shadow:0 0 0 2px rgba(242,230,60,.35);
 }
 .track-legend{display:flex; gap:20px; flex-wrap:wrap; padding-top:12px; border-top:1px solid rgba(255,255,255,.12); margin-top:14px}
-.track-legend div{font-family:var(--f-disp); font-size:11px; letter-spacing:.14em; text-transform:uppercase; opacity:.62}
-.track-legend b{display:block; font-family:var(--f-disp); font-weight:600; font-size:19px; letter-spacing:0; opacity:1}
+.track-legend div{font-family:var(--f-disp); font-weight:600; font-size:10px; letter-spacing:.14em; text-transform:uppercase; opacity:.6}
+.track-legend b{display:block; font-family:var(--f-disp); font-weight:700; font-size:20px; font-stretch:112%; letter-spacing:-0.02em; font-variant-numeric:tabular-nums; opacity:1; margin-top:3px}
 .dot{display:inline-block; width:9px; height:9px; border-radius:99px; margin-right:7px; vertical-align:1px}
 
 /* ============================================================
@@ -157,22 +157,23 @@ h2.sect:first-of-type{margin-top:0}
 .row:last-child{border-bottom:0}
 .row .k{
   flex:1; min-width:0;
-  font-family:var(--f-disp); font-weight:500; font-size:13px;
-  letter-spacing:.11em; text-transform:uppercase; color:var(--muted);
+  font-family:var(--f-disp); font-weight:600; font-size:11.5px;
+  letter-spacing:.13em; text-transform:uppercase; color:var(--muted);
 }
 .row .k small{display:block; font-family:var(--f-body); font-size:12px; letter-spacing:0; text-transform:none; color:var(--muted); opacity:.85; margin-top:3px; font-weight:400}
 .row .v{
-  font-family:var(--f-disp); font-weight:600; font-size:25px;
-  letter-spacing:.01em; color:var(--ink); white-space:nowrap;
+  font-family:var(--f-disp); font-weight:700; font-size:26px; font-stretch:112%;
+  letter-spacing:-0.02em; font-variant-numeric:tabular-nums;
+  color:var(--ink); white-space:nowrap;
 }
-.row .v u{text-decoration:none; font-size:14px; font-weight:400; color:var(--muted); margin-left:5px}
+.row .v u{text-decoration:none; font-size:13px; font-weight:500; font-stretch:100%; color:var(--muted); margin-left:5px}
 .row.hi{background:var(--surface-2)}
 .v.good{color:var(--loss)} .v.bad{color:var(--gain)}
 
 .bar{height:8px; border-radius:99px; background:var(--line); overflow:hidden; margin-top:12px}
 .bar i{display:block; height:100%; border-radius:99px; background:var(--blue)}
 .barwrap{background:var(--surface); border:1px solid var(--line); border-radius:var(--r); padding:18px 20px}
-.barwrap .lbl{display:flex; justify-content:space-between; font-family:var(--f-disp); font-size:12px; letter-spacing:.13em; text-transform:uppercase; color:var(--muted)}
+.barwrap .lbl{display:flex; justify-content:space-between; font-family:var(--f-disp); font-weight:600; font-size:11px; letter-spacing:.13em; text-transform:uppercase; color:var(--muted)}
 .barwrap .lbl b{color:var(--ink); font-weight:600}
 
 /* ============================================================
@@ -182,34 +183,36 @@ h2.sect:first-of-type{margin-top:0}
 .scroll{overflow-x:auto}
 table{width:100%; border-collapse:collapse; font-size:14px}
 thead th{
-  position:sticky; top:58px; z-index:5;
   background:var(--band); color:var(--band-ink);
-  font-family:var(--f-disp); font-weight:500; font-size:11px;
-  letter-spacing:.14em; text-transform:uppercase;
-  padding:11px 12px; text-align:right; white-space:nowrap;
+  font-family:var(--f-disp); font-weight:600; font-size:10.5px;
+  letter-spacing:.13em; text-transform:uppercase;
+  padding:12px; text-align:right; white-space:nowrap;
 }
 thead th:first-child{text-align:center}
 thead th.l{text-align:left}
 tbody td{padding:9px 12px; text-align:right; border-bottom:1px solid var(--line-2); white-space:nowrap}
 tbody tr:last-child td{border-bottom:0}
 td.day{
-  text-align:center; width:46px; color:var(--muted);
-  font-family:var(--f-disp); font-size:12px; letter-spacing:.04em;
+  text-align:center; width:48px; color:var(--muted);
+  font-family:var(--f-mono); font-size:12px;
 }
-td.date{text-align:left; font-family:var(--f-hand); font-size:18px; letter-spacing:.02em; color:var(--ink)}
+td.date{text-align:left; font-family:var(--f-body); font-weight:500; font-size:14px; letter-spacing:-0.005em; color:var(--ink)}
 td.goal{color:var(--muted)}
-td.wt{font-family:var(--f-disp); font-weight:600; font-size:17px}
+td.wt{font-family:var(--f-mono); font-weight:600; font-size:14.5px; color:var(--ink)}
 td.est{color:var(--muted); font-weight:500}
-tr.mon td{background:var(--mon); box-shadow:inset 3px 0 0 var(--mon-line)}
+tr.mon td{background:var(--mon)}
+tr.mon td:first-child{box-shadow:inset 3px 0 0 var(--mon-line)}
 tr.wknd td{background:var(--wknd)}
-tr.now td{box-shadow:inset 0 0 0 2px var(--blue)}
+tr.now td{background:var(--now)}
+tr.now td:first-child{box-shadow:inset 3px 0 0 var(--blue)}
+tr.now td.wt{font-weight:600}
 tr.future td{color:var(--muted)}
 tr.future td.date{color:var(--muted)}
 .up{color:var(--gain)} .down{color:var(--loss)}
 
 .subtabs{display:flex; gap:6px; flex-wrap:wrap; margin:0 0 16px}
 .subtabs button{
-  font-family:var(--f-disp); font-size:12px; letter-spacing:.13em; text-transform:uppercase;
+  font-family:var(--f-disp); font-weight:600; font-size:11px; letter-spacing:.12em; text-transform:uppercase;
   padding:9px 16px; border-radius:99px; cursor:pointer;
   background:var(--surface); border:1px solid var(--line); color:var(--muted);
 }
@@ -218,7 +221,7 @@ tr.future td.date{color:var(--muted)}
 
 .copybtn{
   display:inline-flex; align-items:center; gap:9px;
-  font-family:var(--f-disp); font-size:12px; letter-spacing:.13em; text-transform:uppercase;
+  font-family:var(--f-disp); font-weight:600; font-size:11px; letter-spacing:.12em; text-transform:uppercase;
   padding:11px 18px; border-radius:9px; cursor:pointer; margin-top:14px; margin-right:8px;
   background:var(--surface); border:1px solid var(--line); color:var(--ink-2);
 }
@@ -229,20 +232,20 @@ tr.future td.date{color:var(--muted)}
 .chartcard{background:var(--surface); border:1px solid var(--line); border-radius:var(--r); padding:20px 16px 12px}
 svg.chart{display:block; width:100%; height:auto}
 .chart .grid{stroke:var(--line); stroke-width:1}
-.chart .axis{fill:var(--muted); font-family:var(--f-disp); font-size:11px; letter-spacing:.06em}
+.chart .axis{fill:var(--muted); font-family:var(--f-mono); font-size:11px}
 .chart .pace{stroke:var(--muted); stroke-width:1.6; stroke-dasharray:5 5; fill:none}
 .chart .real{stroke:var(--blue); stroke-width:2.6; fill:none; stroke-linejoin:round}
 .chart .pt{fill:var(--blue)}
 .chart .band{fill:var(--mint); opacity:.11}
 .legend{display:flex; gap:22px; flex-wrap:wrap; padding:14px 6px 4px}
-.legend span{font-family:var(--f-disp); font-size:11px; letter-spacing:.13em; text-transform:uppercase; color:var(--muted)}
+.legend span{font-family:var(--f-disp); font-weight:600; font-size:10.5px; letter-spacing:.12em; text-transform:uppercase; color:var(--muted)}
 
 .gap{
   background:var(--surface); border:1px solid var(--line); border-left:3px solid var(--signal);
   border-radius:var(--r); padding:15px 18px; margin-top:16px;
   font-size:14px; color:var(--ink-2);
 }
-.gap b{font-family:var(--f-disp); font-weight:600; letter-spacing:.1em; text-transform:uppercase; font-size:12px; color:var(--muted); display:block; margin-bottom:5px}
+.gap b{font-family:var(--f-disp); font-weight:600; letter-spacing:.13em; text-transform:uppercase; font-size:10.5px; color:var(--muted); display:block; margin-bottom:6px}
 
 .scrim{display:none}
 @media (max-width:860px){
@@ -260,8 +263,7 @@ svg.chart{display:block; width:100%; height:auto}
   .here{display:none}
   .today-chip .chip-lbl{display:none}
   .row{padding:13px 15px} .row .v{font-size:21px}
-  .track-ends b{font-size:21px}
-  thead th{top:0}
+  .track-ends b{font-size:22px}
 }
 @media (prefers-reduced-motion:reduce){*{animation:none!important; transition:none!important}}
 </style>
@@ -301,8 +303,10 @@ svg.chart{display:block; width:100%; height:auto}
       Order:  date (YYYY-MM-DD), weight, BMI, body fat %, visceral,
               subcutaneous %, BMR, metabolic age, note (optional)
       Use null for anything the scan didn't give you.
-      Put "carried" as the last item on any day with no real scan
-      (the number was carried forward) and it renders in grey.
+      Last item is an optional flag:
+        "carried"  = no weigh-in at all, numbers carried from a nearby day
+        "est-comp" = weight is real, body comp borrowed from the closest-weight day
+      Either flag greys the borrowed figures out on screen.
    ========================================================================= */
 const READINGS = [
   ["2026-07-26", 211.6, null, null, null, null, null, null],
@@ -324,7 +328,9 @@ const READINGS = [
   ["2026-08-11", 211.8, 30.3, 27.2, 13, 23.4, 1864, 44],
   ["2026-08-12", 211.0, 30.2, 27.1, 13, 23.3, 1859, 44, "carried"],
   ["2026-08-13", 209.8, 30.0, 26.8, 13, 23.1, 1889, 44],
-  ["2026-08-14", 212.0, 30.3, 27.3, 13, 23.5, 1864, 44]
+  ["2026-08-14", 212.0, 30.3, 27.3, 13, 23.5, 1864, 44],
+  ["2026-08-15", 209.8, 30.0, 26.8, 13, 23.1, 1894, 44],
+  ["2026-08-16", 212.8, 30.5, 27.5, 13, 23.7, 1872, 44, "est-comp"]
 ];
 
 /* ============================================================================
@@ -459,6 +465,45 @@ const row = (k, v, o={}) => `<div class="row${o.hi?" hi":""}">
 const rows = html => `<div class="rows">${html}</div>`;
 const COPY = '<svg viewBox="0 0 24 24"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M15 5H6a2 2 0 00-2 2v9"/></svg>';
 
+/* ===================== chart (shared by This week and Trend) ===================== */
+function chartSVG(dates, opt){
+  opt = opt || {};
+  const W = 860, H = opt.h || 340, P = { t:18, r:16, b:34, l:46 };
+  const n = dates.length - 1;
+  const idx = {}; dates.forEach((s,i) => idx[s] = i);
+  const pts   = dates.filter(s => BY[s]).map(s => ({ x: idx[s], y: BY[s].weight, date:s }));
+  const goals = dates.map((s,i) => ({ x:i, y: goalOn(s) })).filter(p => p.y !== null);
+  if (!pts.length) return "";
+
+  let vals = pts.map(p=>p.y).concat(goals.map(p=>p.y));
+  if (opt.finish) vals.push(CONFIG.goalWeight);
+  const min = Math.min(...vals), max = Math.max(...vals), span = max - min;
+  const step = span <= 3 ? 0.5 : span <= 8 ? 1 : 2;
+  let lo = Math.floor(min/step)*step, hi = Math.ceil(max/step)*step;
+  if (min - lo < step*0.2) lo -= step;          // keep the line off the axis
+  if (hi - max < step*0.2) hi += step;
+  if (hi === lo) hi = lo + step;
+
+  const X = i => P.l + (n ? i/n : 0.5) * (W - P.l - P.r);
+  const Y = v => P.t + (1 - (v - lo)/(hi - lo)) * (H - P.t - P.b);
+  const path = a => a.map((p,i) => (i?"L":"M") + X(p.x).toFixed(1) + " " + Y(p.y).toFixed(1)).join(" ");
+  const tick = v => v % 1 ? v.toFixed(1) : String(v);
+
+  const ticks = []; for (let v = lo; v <= hi + 1e-9; v += step) ticks.push(Number(v.toFixed(2)));
+  const xl = opt.xLabels ? opt.xLabels(dates) : [];
+
+  return `<svg class="chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="${opt.alt||"Weight against the goal line"}">
+    ${ticks.map(v => `<line class="grid" x1="${P.l}" x2="${W-P.r}" y1="${Y(v)}" y2="${Y(v)}"/>
+      <text class="axis" x="${P.l-9}" y="${Y(v)+4}" text-anchor="end">${tick(v)}</text>`).join("")}
+    ${opt.finish ? `<rect class="band" x="${P.l}" y="${Y(hi)}" width="${W-P.l-P.r}" height="${Y(CONFIG.goalWeight)-Y(hi)}"/>
+      <line x1="${P.l}" x2="${W-P.r}" y1="${Y(CONFIG.goalWeight)}" y2="${Y(CONFIG.goalWeight)}" stroke="var(--mint)" stroke-width="2"/>` : ""}
+    ${xl.map(o => `<text class="axis" x="${X(o.i)}" y="${H-12}" text-anchor="middle">${o.text}</text>`).join("")}
+    <path class="pace" d="${path(goals)}"/>
+    <path class="real" d="${path(pts)}"/>
+    ${pts.map(p => `<circle class="pt" cx="${X(p.x).toFixed(1)}" cy="${Y(p.y).toFixed(1)}" r="${opt.dot||2.9}"/>`).join("")}
+  </svg>`;
+}
+
 /* ===================== DASHBOARD ===================== */
 (function(){
   const pct = Math.max(0, Math.min(100, (lost / totalGoal) * 100));
@@ -524,6 +569,15 @@ const COPY = '<svg viewBox="0 0 24 24"><rect x="9" y="9" width="11" height="11" 
 
   document.getElementById("p-week").innerHTML = `
   <h1 class="title">This week &middot; ${short(mon)} to ${short(days[6])}</h1>
+  <div class="chartcard">
+    ${chartSVG(days, { h:300, dot:3.4, alt:"This week against the goal line",
+      xLabels: ds => ds.map((s,i) => ({ i, text: DOW[d(s).getDay()] })) })}
+    <div class="legend">
+      <span><span class="dot" style="background:var(--blue)"></span>Actual weight</span>
+      <span><span class="dot" style="background:var(--muted)"></span>Goal line</span>
+    </div>
+  </div>
+  <h2 class="sect">Where the week stands</h2>
   ${rows(
     row("Monday start", f1(monW), {unit:"lb", sub:label(mon), hi:true}) +
     row("Latest", f1(latest.weight), {unit:"lb", sub:label(latest.date)}) +
@@ -544,7 +598,7 @@ const COPY = '<svg viewBox="0 0 24 24"><rect x="9" y="9" width="11" height="11" 
       return `<tr class="${d(s).getDay()===1?"mon":([0,6].includes(d(s).getDay())?"wknd":"")}${r?"":" future"}${s===latest.date?" now":""}">
         <td class="date">${label(s)}</td>
         <td class="goal num">${g===null?"—":f1(g)}</td>
-        <td class="wt num${r&&r.note?" est":""}">${r?f1(r.weight):""}</td>
+        <td class="wt num${r&&r.note==="carried"?" est":""}">${r?f1(r.weight):""}</td>
         <td class="num ${chg1===null?"":cls(chg1)}">${chg1===null?"":sgn(chg1)}</td>
         <td class="num ${r&&g!==null?cls(r.weight-g):""}">${r&&g!==null?sgn(r.weight-g):""}</td></tr>`;
     }).join("")}</tbody></table></div></div>`;
@@ -596,7 +650,7 @@ function logTable(filter){
         <td class="day num">${between(s, CONFIG.targetDate)}</td>
         <td class="date">${label(s)}</td>
         <td class="goal num">${g===null?"—":f1(g)}</td>
-        <td class="wt num${r&&r.note?" est":""}">${r?f1(r.weight):""}</td>
+        <td class="wt num${r&&r.note==="carried"?" est":""}">${r?f1(r.weight):""}</td>
         <td class="num ${chg1===null?"":cls(chg1)}">${chg1===null?"":sgn(chg1)}</td>
         <td class="num" style="color:var(--muted)">${avg===null?"":f1(avg)}</td>
         <td class="num ${r&&g!==null?cls(r.weight-g):""}">${r&&g!==null?sgn(r.weight-g):""}</td>
@@ -633,8 +687,9 @@ function logTable(filter){
 /* ===================== BODY COMPOSITION ===================== */
 (function(){
   const scans = logged.filter(s => BY[s].bmi !== null);
-  const L = BY[scans[scans.length-1]];
-  const first = BY[scans[0]];
+  const real  = scans.filter(s => !BY[s].note);
+  const L = BY[real[real.length-1]];
+  const first = BY[real[0]];
   const T = CONFIG.targets;
   const metric = (name, key, target, unit="") => {
     const now = L[key], was = first[key];
@@ -672,7 +727,7 @@ function logTable(filter){
         <td class="wt num">${f1(r.weight)}</td></tr>`;
     }).join("")}</tbody></table></div></div>
   <button class="copybtn" id="copyBC">${COPY} Copy the V to AA block</button>
-  <div class="gap"><b>Copy the V to AA block</b>Copies BMI, body fat, visceral, subcutaneous, BMR and metabolic age as six tab-separated columns, oldest first, ready to paste into columns V through AA. Grey rows are days with no real scan.</div>`;
+  <div class="gap"><b>Copy the V to AA block</b>Copies BMI, body fat, visceral, subcutaneous, BMR and metabolic age as six tab-separated columns, oldest first, ready to paste into columns V through AA. Grey figures are borrowed from the closest-weight day; they stay in the block so the paste lines up row for row.</div>`;
   document.getElementById("copyBC").onclick = e => {
     const txt = logged.filter(s=>BY[s].bmi!==null).map(s => {
       const r = BY[s];
@@ -726,32 +781,15 @@ function logTable(filter){
 
 /* ===================== TREND ===================== */
 (function(){
-  const W = 860, H = 340, P = { t:18, r:16, b:34, l:44 };
-  const xs = ALL, n = xs.length - 1;
-  const pts = logged.map(s => ({ x: ALL.indexOf(s), y: BY[s].weight }));
-  const goals = ALL.map((s,i) => ({ x:i, y: goalOn(s) })).filter(p => p.y !== null);
-  const vals = pts.map(p=>p.y).concat(goals.map(p=>p.y), [CONFIG.goalWeight]);
-  let lo = Math.floor(Math.min(...vals) - 1.5), hi = Math.ceil(Math.max(...vals) + 1.5);
-  const X = i => P.l + (i / n) * (W - P.l - P.r);
-  const Y = v => P.t + (1 - (v - lo) / (hi - lo)) * (H - P.t - P.b);
-  const path = a => a.map((p,i) => (i?"L":"M") + X(p.x).toFixed(1) + " " + Y(p.y).toFixed(1)).join(" ");
-
-  const ticks = []; for (let v = Math.ceil(lo/2)*2; v <= hi; v += 2) ticks.push(v);
-  const monthStarts = ALL.map((s,i)=>({s,i})).filter(o => o.s.endsWith("-01") || o.i === 0);
+  const pts = logged.map(s => ({ y: BY[s].weight }));
+  const hiW = Math.max(...pts.map(p=>p.y)), loW = Math.min(...pts.map(p=>p.y));
 
   document.getElementById("p-trend").innerHTML = `
   <h1 class="title">Trend</h1>
   <div class="chartcard">
-    <svg class="chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="Weight against the goal line">
-      ${ticks.map(v => `<line class="grid" x1="${P.l}" x2="${W-P.r}" y1="${Y(v)}" y2="${Y(v)}"/>
-        <text class="axis" x="${P.l-9}" y="${Y(v)+4}" text-anchor="end">${v}</text>`).join("")}
-      <rect class="band" x="${P.l}" y="${Y(hi)}" width="${W-P.l-P.r}" height="${Y(CONFIG.goalWeight)-Y(hi)}"/>
-      <line class="grid" x1="${P.l}" x2="${W-P.r}" y1="${Y(CONFIG.goalWeight)}" y2="${Y(CONFIG.goalWeight)}" stroke="var(--mint)" stroke-width="2"/>
-      ${monthStarts.map(o => `<text class="axis" x="${X(o.i)}" y="${H-12}" text-anchor="middle">${MON[Number(o.s.slice(5,7))-1]}</text>`).join("")}
-      <path class="pace" d="${path(goals)}"/>
-      <path class="real" d="${path(pts)}"/>
-      ${pts.map(p => `<circle class="pt" cx="${X(p.x).toFixed(1)}" cy="${Y(p.y).toFixed(1)}" r="2.9"/>`).join("")}
-    </svg>
+    ${chartSVG(ALL, { h:340, finish:true,
+      xLabels: ds => ds.map((s,i) => ({s,i})).filter(o => o.s.endsWith("-01") || o.i === 0)
+                       .map(o => ({ i:o.i, text: MON[Number(o.s.slice(5,7))-1] })) })}
     <div class="legend">
       <span><span class="dot" style="background:var(--blue)"></span>Actual weight</span>
       <span><span class="dot" style="background:var(--muted)"></span>Goal line, ${f1(CONFIG.paceLbsPerWeek)} lb a week</span>
@@ -759,9 +797,9 @@ function logTable(filter){
     </div>
   </div>
   ${rows(
-    row("Highest logged", f1(Math.max(...pts.map(p=>p.y))), {unit:"lb"}) +
-    row("Lowest logged", f1(Math.min(...pts.map(p=>p.y))), {unit:"lb"}) +
-    row("Spread", f1(Math.max(...pts.map(p=>p.y)) - Math.min(...pts.map(p=>p.y))), {unit:"lb"}) +
+    row("Highest logged", f1(hiW), {unit:"lb"}) +
+    row("Lowest logged", f1(loW), {unit:"lb"}) +
+    row("Spread", f1(hiW - loW), {unit:"lb"}) +
     row("Days logged", pts.length, {sub:`${logged.filter(s=>BY[s].bmi!==null).length} with a full scan`})
   )}`;
 })();
