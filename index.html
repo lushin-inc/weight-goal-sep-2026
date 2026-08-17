@@ -247,6 +247,35 @@ svg.chart{display:block; width:100%; height:auto}
 .legend{display:flex; gap:22px; flex-wrap:wrap; padding:14px 6px 4px}
 .legend span{font-family:var(--f-disp); font-weight:600; font-size:10.5px; letter-spacing:.12em; text-transform:uppercase; color:var(--muted)}
 
+.inp{
+  font-family:var(--f-mono); font-size:19px; font-weight:500;
+  width:132px; text-align:right; padding:9px 13px;
+  background:var(--surface-2); color:var(--ink);
+  border:1px solid var(--line); border-radius:8px;
+  -moz-appearance:textfield; appearance:textfield;
+}
+.inp::-webkit-outer-spin-button,.inp::-webkit-inner-spin-button{-webkit-appearance:none; margin:0}
+.inp:focus{outline:none; border-color:var(--blue); box-shadow:0 0 0 3px rgba(74,144,226,.18)}
+.result{
+  background:var(--band); color:var(--band-ink); border-radius:var(--r);
+  padding:26px 24px; box-shadow:var(--shadow);
+}
+.result .lbl{
+  font-family:var(--f-disp); font-weight:600; font-size:10px;
+  letter-spacing:.15em; text-transform:uppercase; opacity:.6;
+}
+.result .big{
+  font-family:var(--f-disp); font-weight:700; font-size:50px; font-stretch:112%;
+  letter-spacing:-0.035em; font-variant-numeric:tabular-nums;
+  line-height:1; margin-top:8px;
+}
+.result .big.good{color:#63D694} .result .big.bad{color:#F5877D}
+.result .ledger{
+  font-family:var(--f-mono); font-size:12px; line-height:1.8; opacity:.5; white-space:pre-line;
+  margin-top:16px; padding-top:14px; border-top:1px solid rgba(255,255,255,.12);
+}
+@media (max-width:860px){ .result .big{font-size:40px} .inp{width:112px; font-size:17px} }
+
 .gap{
   background:var(--surface); border:1px solid var(--line); border-left:3px solid var(--signal);
   border-radius:var(--r); padding:15px 18px; margin-top:16px;
@@ -301,6 +330,7 @@ svg.chart{display:block; width:100%; height:auto}
     <section class="page" id="p-log"></section>
     <section class="page" id="p-body"></section>
     <section class="page" id="p-weeks"></section>
+    <section class="page" id="p-whatif"></section>
     <section class="page" id="p-trend"></section>
   </main>
 </div>
@@ -421,6 +451,8 @@ const PAGES = [
     icon:'<circle cx="12" cy="5.5" r="2.5"/><path d="M8 21v-5l-2-3 2-3h8l2 3-2 3v5"/>' },
   { id:"weeks", name:"Weeks and months", group:null,
     icon:'<path d="M4 20V9M10 20V4M16 20v-8M22 20H2"/>' },
+  { id:"whatif", name:"What if\u2026", group:"Tool",
+    icon:'<path d="M4 7h9M17 7h3M4 17h3M11 17h9"/><circle cx="15" cy="7" r="2.2"/><circle cx="9" cy="17" r="2.2"/>' },
   { id:"trend", name:"Trend", group:"Picture",
     icon:'<path d="M3 17l5-6 4 3 4-7 5 5"/><circle cx="8" cy="11" r="1.4"/><circle cx="12" cy="14" r="1.4"/>' }
 ];
@@ -898,6 +930,81 @@ function logTable(filter){
     row("Spread", f1(hiW - loW), {unit:"lb"}) +
     row("Days logged", pts.length, {sub:`${logged.filter(s=>BY[s].bmi!==null).length} with a full scan`})
   )}`;
+})();
+
+/* ===================== WHAT IF ===================== */
+(function(){
+  const el = document.getElementById("p-whatif");
+  const bmrDay = logged.filter(s => BY[s].bmr !== null).slice(-1)[0];
+  const bmr = BY[bmrDay].bmr;
+  const today = latest;
+  const tmr = iso(new Date(d(today.date).getTime() + DAY));
+  const target = goalOn(tmr);
+
+  let saved = { cin: bmr, cout: 0 };
+  try{ const v = JSON.parse(localStorage.getItem("fl-whatif") || "null"); if (v) saved = v; }catch(e){}
+
+  el.innerHTML = `
+  <h1 class="title">What if\u2026</h1>
+
+  <h2 class="sect">Today</h2>
+  ${rows(
+    row("Weight", f1(today.weight), {unit:"lb", sub:label(today.date), hi:true}) +
+    row("BMR", bmr, {unit:"cal", sub:`from the ${short(bmrDay)} scan`})
+  )}
+
+  <h2 class="sect">Fill in</h2>
+  <div class="rows">
+    <div class="row"><div class="k">Calories in</div>
+      <input class="inp" id="wiIn" type="number" inputmode="numeric" step="10" min="0" value="${saved.cin}"></div>
+    <div class="row"><div class="k">Calories burned<small>Exercise on top of BMR</small></div>
+      <input class="inp" id="wiOut" type="number" inputmode="numeric" step="10" min="0" value="${saved.cout}"></div>
+  </div>
+
+  <h2 class="sect">Estimate</h2>
+  <div class="result">
+    <div class="lbl">Change by tomorrow</div>
+    <div class="big" id="wiBig">&mdash;</div>
+    <div class="ledger" id="wiLedger"></div>
+  </div>
+
+  <h2 class="sect">Tomorrow &middot; ${label(tmr)}</h2>
+  ${rows(
+    row("Weight tomorrow target", target === null ? "&mdash;" : f1(target), {unit:"lb", hi:true}) +
+    `<div class="row"><div class="k">Weight tomorrow estimate</div><div class="v" id="wiEst">&mdash;</div></div>` +
+    `<div class="row"><div class="k">Pace to target</div><div class="v" id="wiPace">&mdash;</div></div>`
+  )}`;
+
+  const $ = i => document.getElementById(i);
+  function calc(){
+    const cin  = Math.max(0, Number($("wiIn").value)  || 0);
+    const cout = Math.max(0, Number($("wiOut").value) || 0);
+    const net   = cin - bmr - cout;          // positive = surplus
+    const delta = net / 3500;                // lb change, negative = loss
+    const est   = today.weight + delta;
+    const pace  = target === null ? null : est - target;
+
+    const big = $("wiBig");
+    big.textContent = (delta < 0 ? "\u2212" : delta > 0 ? "+" : "") + Math.abs(delta).toFixed(2) + " lb";
+    big.className = "big " + (delta < 0 ? "good" : delta > 0 ? "bad" : "");
+
+    $("wiLedger").textContent =
+      `${bmr} BMR  +  ${cout} burned  \u2212  ${cin} in  =  ${net > 0 ? "+" : net < 0 ? "\u2212" : ""}${Math.abs(net)} cal`
+      + `\n\u00F7 3500  =  ${Math.abs(delta).toFixed(2)} lb ${delta < 0 ? "off" : delta > 0 ? "on" : ""}`;
+
+    $("wiEst").innerHTML = est.toFixed(2) + "<u>lb</u>";
+
+    const pv = $("wiPace");
+    if (pace === null){ pv.innerHTML = "&mdash;"; pv.className = "v"; }
+    else {
+      pv.innerHTML = (pace <= 0 ? "\u2212" : "+") + Math.abs(pace).toFixed(2) + "<u>lb</u>";
+      pv.className = "v " + (pace <= 0 ? "good" : "bad");
+    }
+    try{ localStorage.setItem("fl-whatif", JSON.stringify({ cin, cout })); }catch(e){}
+  }
+  $("wiIn").addEventListener("input", calc);
+  $("wiOut").addEventListener("input", calc);
+  calc();
 })();
 
 route();
